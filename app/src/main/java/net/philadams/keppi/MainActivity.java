@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
@@ -21,26 +22,31 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import java.util.UUID;
 
-public class MainActivity extends Activity implements BluetoothAdapter.LeScanCallback {
+public class MainActivity extends Activity {
 
   public static final String TAG = MainActivity.class.getSimpleName();
 
+  // Intent requests
   private final int REQUEST_ENABLE_BT = 1;
 
-  // bluetooth states
+  // misc constants
+  private static final long MAX_SCAN_PERIOD = 3000;
+
+  // Bluetooth state
   final private static int STATE_BLUETOOTH_OFF = 1;
   final private static int STATE_DISCONNECTED = 2;
   final private static int STATE_CONNECTING = 3;
   final private static int STATE_CONNECTED = 4;
   private int state;
 
-  private boolean scanStarted;
   private boolean scanning;
 
   private BluetoothAdapter bluetoothAdapter;
   private BluetoothDevice bluetoothDevice;
 
   private RFduinoService rfduinoService;
+
+  private Handler handler;
 
   private TextView scanStatusText;
   private Button scanButton;
@@ -69,9 +75,8 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
   private final BroadcastReceiver scanModeReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
-      scanning = (bluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_NONE);
-      scanStarted &= scanning;
-      updateUi();
+      //scanning = (bluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_NONE);
+      //updateUi();
     }
   };
 
@@ -120,28 +125,28 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
+    // init various variables
+    handler = new Handler();
+
     // ensure bluetooth on (with user permission)
     ensureBluetoothEnabled();
 
-    // Find Device
+    // scanning for RFDuino
     scanStatusText = (TextView) findViewById(R.id.scanStatus);
-
     scanButton = (Button) findViewById(R.id.scan);
     scanButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        scanStarted = true;
         ensureBluetoothEnabled();
-        bluetoothAdapter.startLeScan(new UUID[] { RFduinoService.UUID_SERVICE }, MainActivity.this);
+        scanForRFduinoDevice(true);
       }
     });
 
-    // Device Info
+    // device info
     deviceInfoText = (TextView) findViewById(R.id.deviceInfo);
 
-    // Connect Device
+    // connecting to the device
     connectionStatusText = (TextView) findViewById(R.id.connectionStatus);
-
     connectButton = (Button) findViewById(R.id.connect);
     connectButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -181,7 +186,7 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
   protected void onStop() {
     super.onStop();
 
-    bluetoothAdapter.stopLeScan(this);
+    scanForRFduinoDevice(false);
 
     unregisterReceiver(scanModeReceiver);
     unregisterReceiver(bluetoothStateReceiver);
@@ -221,6 +226,44 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
   // Helper methods //
   ////////////////////
 
+  private void scanForRFduinoDevice(final boolean enableScan) {
+    if (enableScan) {
+      // set up to stop scan after MAX_SCAN_PERIOD (scanning *destroys* battery life)
+      handler.postDelayed(new Runnable() {
+        @Override
+        public void run() {
+          scanning = false;
+          bluetoothAdapter.stopLeScan(leScanCallback);
+        }
+      }, MAX_SCAN_PERIOD);
+      // start scan
+      scanning = true;
+      bluetoothAdapter.startLeScan(new UUID[] { RFduinoService.UUID_SERVICE }, leScanCallback);
+    } else {
+      scanning = false;
+      bluetoothAdapter.stopLeScan(leScanCallback);
+    }
+  }
+
+  private BluetoothAdapter.LeScanCallback leScanCallback = new BluetoothAdapter.LeScanCallback() {
+    @Override
+    public void onLeScan(final BluetoothDevice device, final int rssi, final byte[] scanRecord) {
+      bluetoothDevice = device;
+      upgradeState(STATE_DISCONNECTED);
+      updateUi();
+
+      // for now, we'll shortcut the scan as soon as we've found the first RFDuino device
+      scanForRFduinoDevice(false);
+
+      runOnUiThread(new Runnable() {
+        @Override public void run() {
+          deviceInfoText.setText(
+              BluetoothHelper.getDeviceInfoText(bluetoothDevice, rssi, scanRecord));
+        }
+      });
+    }
+  };
+
   private void ensureBluetoothEnabled() {
     final BluetoothManager bluetoothManager =
         (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
@@ -249,35 +292,30 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
   }
 
   private void updateUi() {
-    // Enable Bluetooth
-    boolean on = state > STATE_BLUETOOTH_OFF;
-    scanButton.setEnabled(on);
 
-    // Scan
-    if (scanStarted && scanning) {
+    Log.d(TAG, "updateUI");
+
+    if (state > STATE_BLUETOOTH_OFF) {
+      scanButton.setEnabled(true);
+    }
+
+    if (scanning) {
       scanStatusText.setText("Scanning...");
       scanButton.setText("Stop Scan");
-      scanButton.setEnabled(true);
-    } else if (scanStarted) {
-      scanStatusText.setText("Scan started...");
-      scanButton.setEnabled(false);
     } else {
       scanStatusText.setText("");
-      scanButton.setText("Scan");
-      scanButton.setEnabled(true);
+      scanButton.setTag("Scan");
     }
+    scanButton.setEnabled(true);
 
-    // Connect
-    boolean connected = false;
-    String connectionText = "Disconnected";
-    if (state == STATE_CONNECTING) {
-      connectionText = "Connecting...";
+    if (bluetoothDevice != null && state == STATE_DISCONNECTED) {
+      connectionStatusText.setText("Disconnected");
+      connectButton.setEnabled(true);
+    } else if (state == STATE_CONNECTING) {
+      connectionStatusText.setText("Connecting...");
     } else if (state == STATE_CONNECTED) {
-      connected = true;
-      connectionText = "Connected";
+      connectionStatusText.setText("Connected");
     }
-    connectionStatusText.setText(connectionText);
-    connectButton.setEnabled(bluetoothDevice != null && state == STATE_DISCONNECTED);
   }
 
   private void addData(byte[] data) {
@@ -294,21 +332,6 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
 
     dataLayout.addView(view, LinearLayout.LayoutParams.MATCH_PARENT,
         LinearLayout.LayoutParams.WRAP_CONTENT);
-  }
-
-  @Override
-  public void onLeScan(BluetoothDevice device, final int rssi, final byte[] scanRecord) {
-    bluetoothAdapter.stopLeScan(this);
-    bluetoothDevice = device;
-
-    MainActivity.this.runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        deviceInfoText.setText(
-            BluetoothHelper.getDeviceInfoText(bluetoothDevice, rssi, scanRecord));
-        updateUi();
-      }
-    });
   }
 }
 

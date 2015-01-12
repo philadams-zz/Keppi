@@ -18,7 +18,7 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:id="@+id/textView2"
-      android:text="Find Device"
+      android:text="Scan for device"
       android:layout_marginTop="5dip" />
 
   <TextView
@@ -52,7 +52,7 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:id="@+id/textView3"
-      android:text="Connect Device"
+      android:text="Connect to device"
       android:layout_marginTop="5dip" />
 
   <TextView
@@ -63,7 +63,7 @@
   <Button
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
-      android:text="Connect"
+      android:text="Connect to RFDuino"
       android:id="@+id/connect"
       android:layout_gravity="center_horizontal"
       android:enabled="false" />
@@ -73,7 +73,7 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:id="@+id/textView7"
-      android:text="Receive"
+      android:text="Data received from RFDuino"
       android:layout_marginTop="5dip" />
 
   <Button
@@ -85,16 +85,14 @@
       android:layout_marginTop="2dip"
       android:singleLine="false" />
 
-  <TextView
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="Data:"
-      android:id="@+id/textView8" />
-
-  <LinearLayout
-      android:orientation="vertical"
-      android:layout_width="fill_parent"
-      android:layout_height="fill_parent"
-      android:id="@+id/dataLayout"></LinearLayout>
+  <ScrollView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/dataLayout" />
+  </ScrollView>
 
 </LinearLayout>
