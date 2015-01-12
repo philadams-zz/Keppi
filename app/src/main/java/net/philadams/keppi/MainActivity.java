@@ -3,6 +3,7 @@ package net.philadams.keppi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -18,6 +19,11 @@ import android.widget.TextView;
 import java.util.UUID;
 
 public class MainActivity extends Activity implements BluetoothAdapter.LeScanCallback {
+
+  public static final String TAG = MainActivity.class.getSimpleName();
+
+  private final int REQUEST_ENABLE_BT = 1;
+
   // State machine
   final private static int STATE_BLUETOOTH_OFF = 1;
   final private static int STATE_DISCONNECTED = 2;
@@ -34,7 +40,6 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
 
   private RFduinoService rfduinoService;
 
-  private Button enableBluetoothButton;
   private TextView scanStatusText;
   private Button scanButton;
   private TextView deviceInfoText;
@@ -113,18 +118,8 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-    // Bluetooth
-    enableBluetoothButton = (Button) findViewById(R.id.enableBluetooth);
-    enableBluetoothButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        enableBluetoothButton.setEnabled(false);
-        enableBluetoothButton.setText(
-            bluetoothAdapter.enable() ? "Enabling bluetooth..." : "Enable failed!");
-      }
-    });
+    // ensure bluetooth on (with user permission)
+    ensureBluetoothEnabled();
 
     // Find Device
     scanStatusText = (TextView) findViewById(R.id.scanStatus);
@@ -194,6 +189,15 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
   // Helper methods //
   ////////////////////
 
+  private void ensureBluetoothEnabled() {
+    final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+    bluetoothAdapter = bluetoothManager.getAdapter();
+    if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
+      Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+      startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+    }
+  }
+
   private void upgradeState(int newState) {
     if (newState > state) {
       updateState(newState);
@@ -214,8 +218,6 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
   private void updateUi() {
     // Enable Bluetooth
     boolean on = state > STATE_BLUETOOTH_OFF;
-    enableBluetoothButton.setEnabled(!on);
-    enableBluetoothButton.setText(on ? "Bluetooth enabled" : "Enable Bluetooth");
     scanButton.setEnabled(on);
 
     // Scan

@@ -20,21 +20,6 @@
             style="?android:attr/listSeparatorTextViewStyle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textView"
-            android:text="Bluetooth" />
-
-        <Button
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Enable Bluetooth"
-            android:id="@+id/enableBluetooth"
-            android:enabled="true"
-            android:focusableInTouchMode="true" />
-
-        <TextView
-            style="?android:attr/listSeparatorTextViewStyle"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
             android:id="@+id/textView2"
             android:text="Find Device"
             android:layout_marginTop="5dip" />
