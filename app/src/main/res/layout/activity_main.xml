@@ -18,8 +18,7 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:id="@+id/textView2"
-      android:text="Scan for device"
-      android:layout_marginTop="5dip" />
+      android:text="Scan for device"/>
 
   <TextView
       android:layout_width="wrap_content"
@@ -31,7 +30,6 @@
       android:layout_height="wrap_content"
       android:text="Scan"
       android:id="@+id/scan"
-      android:layout_gravity="center_horizontal"
       android:enabled="false" />
 
   <TextView
@@ -39,8 +37,7 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:id="@+id/textView4"
-      android:text="Device Info"
-      android:layout_marginTop="5dip" />
+      android:text="Device Info"/>
 
   <TextView
       android:layout_width="wrap_content"
@@ -52,8 +49,7 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:id="@+id/textView3"
-      android:text="Connect to device"
-      android:layout_marginTop="5dip" />
+      android:text="Connect to device"/>
 
   <TextView
       android:layout_width="wrap_content"
@@ -65,7 +61,6 @@
       android:layout_height="wrap_content"
       android:text="Connect to RFDuino"
       android:id="@+id/connect"
-      android:layout_gravity="center_horizontal"
       android:enabled="false" />
 
   <TextView
@@ -73,26 +68,17 @@
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:id="@+id/textView7"
-      android:text="Data received from RFDuino"
-      android:layout_marginTop="5dip" />
+      android:text="Data received from RFDuino"/>
 
   <Button
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
-      android:text="Clear Data"
-      android:id="@+id/clearData"
-      android:layout_weight="1"
-      android:layout_marginTop="2dip"
-      android:singleLine="false" />
+      android:text="Clear received data"
+      android:id="@+id/clearData"/>
 
-  <ScrollView
+  <ListView
+      android:id="@+id/received_data_list"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:id="@+id/dataLayout" />
-  </ScrollView>
+      android:layout_height="wrap_content"/>
 
 </LinearLayout>

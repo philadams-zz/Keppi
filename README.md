@@ -4,8 +4,6 @@ Keppi
 Simple Android app for connecting via Bluetooth LE to the pain stick (better
 name pending).
 
-- TODO display large number for last received value
-- TODO clean up UI for lab tests
 - TODO have data export functionality?
 
 License

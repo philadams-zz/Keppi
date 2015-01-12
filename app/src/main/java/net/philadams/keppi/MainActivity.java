@@ -17,9 +17,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class MainActivity extends Activity {
@@ -48,13 +52,15 @@ public class MainActivity extends Activity {
 
   private Handler handler;
 
+  private ListView receivedDataListView;
+  private ArrayAdapter receivedDataAdapter;
+  private ArrayList<String> receivedData;
   private TextView scanStatusText;
   private Button scanButton;
   private TextView deviceInfoText;
   private TextView connectionStatusText;
   private Button connectButton;
   private Button clearButton;
-  private LinearLayout dataLayout;
 
   ////////////////////////
   // BroadcastReceivers //
@@ -127,13 +133,22 @@ public class MainActivity extends Activity {
 
     // init various variables
     handler = new Handler();
+    receivedDataListView = (ListView) findViewById(R.id.received_data_list);
+    receivedData = new ArrayList<String>();
+    receivedDataAdapter =
+        new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1,
+            android.R.id.text1, receivedData);
+    receivedDataListView.setAdapter(receivedDataAdapter);
+    scanStatusText = (TextView) findViewById(R.id.scanStatus);
+    scanButton = (Button) findViewById(R.id.scan);
+    deviceInfoText = (TextView) findViewById(R.id.deviceInfo);
+    connectionStatusText = (TextView) findViewById(R.id.connectionStatus);
+    connectButton = (Button) findViewById(R.id.connect);
 
-    // ensure bluetooth on (with user permission)
+    // ensure bluetooth on, with explicit user permission if it's not
     ensureBluetoothEnabled();
 
     // scanning for RFDuino
-    scanStatusText = (TextView) findViewById(R.id.scanStatus);
-    scanButton = (Button) findViewById(R.id.scan);
     scanButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -142,12 +157,7 @@ public class MainActivity extends Activity {
       }
     });
 
-    // device info
-    deviceInfoText = (TextView) findViewById(R.id.deviceInfo);
-
     // connecting to the device
-    connectionStatusText = (TextView) findViewById(R.id.connectionStatus);
-    connectButton = (Button) findViewById(R.id.connect);
     connectButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
@@ -163,11 +173,10 @@ public class MainActivity extends Activity {
     clearButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View v) {
-        dataLayout.removeAllViews();
+        receivedData.clear();
+        receivedDataAdapter.notifyDataSetChanged();
       }
     });
-
-    dataLayout = (LinearLayout) findViewById(R.id.dataLayout);
   }
 
   @Override
@@ -319,19 +328,14 @@ public class MainActivity extends Activity {
   }
 
   private void addData(byte[] data) {
-    View view = getLayoutInflater().inflate(android.R.layout.simple_list_item_2, dataLayout, false);
-
-    TextView text1 = (TextView) view.findViewById(android.R.id.text1);
-    text1.setText(HexAsciiHelper.bytesToHex(data));
-
-    String ascii = HexAsciiHelper.bytesToAsciiMaybe(data);
-    if (ascii != null) {
-      TextView text2 = (TextView) view.findViewById(android.R.id.text2);
-      text2.setText(ascii);
-    }
-
-    dataLayout.addView(view, LinearLayout.LayoutParams.MATCH_PARENT,
-        LinearLayout.LayoutParams.WRAP_CONTENT);
+    // The test RFDuino just sends a floating point value every second
+    // This value represents the temperature of the device in celsius
+    // https://github.com/RFduino/RFduino/blob/master/libraries/RFduinoBLE/examples/Temperature/Temperature.ino
+    // Arduino floats stored as 4 bytes (max of 20 bytes in a message for BTLE)
+    // http://arduino.cc/en/Reference/Float
+    String received =
+        Float.toString(ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN).getFloat());
+    receivedData.add(String.format("Temperature: %s\u00b0C", received));
+    receivedDataAdapter.notifyDataSetChanged();
   }
 }
-
