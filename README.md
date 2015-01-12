@@ -4,14 +4,10 @@ Keppi
 Simple Android app for connecting via Bluetooth LE to the pain stick (better
 name pending).
 
-TODO
-----
-
-- remove send code
-- require bluetooth for project
-- display large number for last received value
-- clean up UI for lab tests
-- have data export functionality?
+- TODO require bluetooth for project
+- TODO display large number for last received value
+- TODO clean up UI for lab tests
+- TODO have data export functionality?
 
 License
 -------

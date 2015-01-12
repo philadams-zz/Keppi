@@ -1,7 +1,6 @@
 package net.philadams.keppi;
 
 import android.bluetooth.BluetoothDevice;
-
 import java.util.UUID;
 
 public class BluetoothHelper {
