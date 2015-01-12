@@ -12,6 +12,9 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -24,12 +27,11 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
 
   private final int REQUEST_ENABLE_BT = 1;
 
-  // State machine
+  // bluetooth states
   final private static int STATE_BLUETOOTH_OFF = 1;
   final private static int STATE_DISCONNECTED = 2;
   final private static int STATE_CONNECTING = 3;
   final private static int STATE_CONNECTED = 4;
-
   private int state;
 
   private boolean scanStarted;
@@ -129,6 +131,7 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
       @Override
       public void onClick(View v) {
         scanStarted = true;
+        ensureBluetoothEnabled();
         bluetoothAdapter.startLeScan(new UUID[] { RFduinoService.UUID_SERVICE }, MainActivity.this);
       }
     });
@@ -185,12 +188,42 @@ public class MainActivity extends Activity implements BluetoothAdapter.LeScanCal
     unregisterReceiver(rfduinoReceiver);
   }
 
+  //////////////////
+  // Options menu //
+  //////////////////
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.menu_main, menu);
+    return true;
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      case R.id.action_enable_bluetooth:
+        ensureBluetoothEnabled();
+        return true;
+      default:
+        return super.onOptionsItemSelected(item);
+    }
+  }
+
+  @Override
+  public boolean onPrepareOptionsMenu(Menu menu) {
+    super.onPrepareOptionsMenu(menu);
+    Log.d(TAG, String.format("state: %d", state));
+    menu.findItem(R.id.action_enable_bluetooth).setEnabled(state == STATE_BLUETOOTH_OFF);
+    return true;
+  }
+
   ////////////////////
   // Helper methods //
   ////////////////////
 
   private void ensureBluetoothEnabled() {
-    final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+    final BluetoothManager bluetoothManager =
+        (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
     bluetoothAdapter = bluetoothManager.getAdapter();
     if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
       Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
