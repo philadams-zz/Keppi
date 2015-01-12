@@ -4,6 +4,10 @@ Keppi
 Simple Android app for connecting via Bluetooth LE to the pain stick (better
 name pending).
 
+![Image of Keppi](./docs/keppi-image.png)
+
+See [the releases folder](./releases) for the latest release(s).
+
 - TODO have data export functionality?
 
 License
