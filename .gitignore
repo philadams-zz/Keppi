@@ -18,6 +18,7 @@ todo.txt
 # Generated files
 bin/
 gen/
+app/manifest-merger-release-report.txt
 
 # Gradle files
 .gradle/
