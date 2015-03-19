@@ -1,13 +1,13 @@
 Keppi
 =====
 
-Simple Android app for connecting via Bluetooth LE to the pain stick (better
-name pending).
+Simple Android app for connecting via Bluetooth LE to the Keppi stick.
 
 ![Image of Keppi](./docs/keppi-image.png)
 
 See [the releases folder](./releases) for the latest release(s).
 
+- TODO have 'scanning' notice when scanning and device not yet found
 - TODO have data export functionality?
 
 License

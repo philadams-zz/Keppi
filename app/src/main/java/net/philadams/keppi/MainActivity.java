@@ -26,6 +26,11 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.UUID;
 
+/**
+ * TODO:philadams dump receivedData into db
+ * TODO:philadams display latest value in slider widget
+ * TODO:philadams export functionality (email .csv?)
+ */
 public class MainActivity extends Activity {
 
   public static final String TAG = MainActivity.class.getSimpleName();
@@ -333,6 +338,9 @@ public class MainActivity extends Activity {
     // https://github.com/RFduino/RFduino/blob/master/libraries/RFduinoBLE/examples/Temperature/Temperature.ino
     // Arduino floats stored as 4 bytes (max of 20 bytes in a message for BTLE)
     // http://arduino.cc/en/Reference/Float
+
+    // TODO:philadams receive this datum and push it (either already normalized or normalized
+    // to 0...100) to KeppiSliderNumberedView.setProgress(progress)
     String received =
         Float.toString(ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN).getFloat());
     receivedData.add(String.format("Temperature: %s\u00b0C", received));
