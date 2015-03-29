@@ -235,11 +235,12 @@ public class MainActivity extends Activity {
       case R.id.action_export_log:
         exportLog();
         return true;
+      case R.id.action_remove_log:
+        removeLog();
+        return true;
       default:
         return super.onOptionsItemSelected(item);
     }
-    // TODO:philadams export log file to email action
-    // TODO:philadams empty log file action
   }
 
   @Override
@@ -377,9 +378,9 @@ public class MainActivity extends Activity {
   }
 
   public void exportLog() {
-    File attachment = new File(getFilesDir() + "/" + LOG_FNAME);
+    File logFile = new File(getFilesDir() + "/" + LOG_FNAME);
     Uri attachmentUri =
-        FileProvider.getUriForFile(this, "net.philadams.keppi.fileprovider", attachment);
+        FileProvider.getUriForFile(this, "net.philadams.keppi.fileprovider", logFile);
     Intent emailIntent = new Intent(Intent.ACTION_SEND);
     emailIntent.putExtra(Intent.EXTRA_EMAIL, EMAIL_RECIPIENTS);
     emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Keppi log file");
@@ -388,22 +389,10 @@ public class MainActivity extends Activity {
     emailIntent.putExtra(Intent.EXTRA_STREAM, attachmentUri);
     emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
     startActivity(emailIntent);
-
-    //try {
-    //  FileInputStream in = openFileInput(LOG_FNAME);
-    //  InputStreamReader streamReader = new InputStreamReader(in);
-    //  BufferedReader reader = new BufferedReader(streamReader);
-    //  StringBuilder sb = new StringBuilder();
-    //  String line;
-    //  while ((line = reader.readLine()) != null) {
-    //    sb.append(line);
-    //  }
-    //} catch (IOException e) {
-    //  Log.e(TAG, e.toString());
-    //}
   }
 
-  public void emptyLog() {
-
+  public void removeLog() {
+    File logFile = new File(getFilesDir() + "/" + LOG_FNAME);
+    logFile.delete();
   }
 }
