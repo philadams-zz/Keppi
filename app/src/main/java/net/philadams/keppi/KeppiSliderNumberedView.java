@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -172,7 +171,6 @@ public class KeppiSliderNumberedView extends View {
    */
   public void setProgress(int progress) {
     mProgress = progress;
-    Log.d(TAG, String.format("setting progress on slider to %d", progress));
     float min = 0f;
     float max = 100f;
     float target = maxTargetY - Utility.linearlyScale(progress, min, max, minTargetY, maxTargetY);

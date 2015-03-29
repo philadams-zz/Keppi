@@ -32,9 +32,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 /**
- * TODO:philadams dump receivedData into db
- * TODO:philadams display latest value in slider widget
- * TODO:philadams export functionality (email .csv?)
+ * TODO:philadams actually receive data from the Keppi
  */
 public class MainActivity extends Activity {
 
