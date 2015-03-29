@@ -8,4 +8,9 @@
       android:title="@string/action_enable_bluetooth"
       android:orderInCategory="100"
       android:showAsAction="never" />
+  <item
+      android:id="@+id/action_export_log"
+      android:title="@string/action_export_log"
+      android:orderInCategory="100"
+      android:showAsAction="never" />
 </menu>

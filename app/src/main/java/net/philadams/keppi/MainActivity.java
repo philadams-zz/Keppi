@@ -10,9 +10,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,6 +23,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -34,6 +39,8 @@ import java.util.UUID;
 public class MainActivity extends Activity {
 
   public static final String TAG = MainActivity.class.getSimpleName();
+  private final String LOG_FNAME = "net.philadams.keppi.log.csv";
+  private final String[] EMAIL_RECIPIENTS = { "philadams.net@gmail.com" };
 
   // Intent requests
   private final int REQUEST_ENABLE_BT = 1;
@@ -66,6 +73,7 @@ public class MainActivity extends Activity {
   private TextView connectionStatusText;
   private Button connectButton;
   private Button clearButton;
+  private KeppiSliderNumberedView slider;
 
   ////////////////////////
   // BroadcastReceivers //
@@ -149,6 +157,7 @@ public class MainActivity extends Activity {
     deviceInfoText = (TextView) findViewById(R.id.deviceInfo);
     connectionStatusText = (TextView) findViewById(R.id.connectionStatus);
     connectButton = (Button) findViewById(R.id.connect);
+    slider = (KeppiSliderNumberedView) findViewById(R.id.keppi_slider_view);
 
     // ensure bluetooth on, with explicit user permission if it's not
     ensureBluetoothEnabled();
@@ -223,9 +232,14 @@ public class MainActivity extends Activity {
       case R.id.action_enable_bluetooth:
         ensureBluetoothEnabled();
         return true;
+      case R.id.action_export_log:
+        exportLog();
+        return true;
       default:
         return super.onOptionsItemSelected(item);
     }
+    // TODO:philadams export log file to email action
+    // TODO:philadams empty log file action
   }
 
   @Override
@@ -339,11 +353,57 @@ public class MainActivity extends Activity {
     // Arduino floats stored as 4 bytes (max of 20 bytes in a message for BTLE)
     // http://arduino.cc/en/Reference/Float
 
-    // TODO:philadams receive this datum and push it (either already normalized or normalized
-    // to 0...100) to KeppiSliderNumberedView.setProgress(progress)
-    String received =
-        Float.toString(ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN).getFloat());
-    receivedData.add(String.format("Temperature: %s\u00b0C", received));
-    receivedDataAdapter.notifyDataSetChanged();
+    Log.d(TAG, "hello addData");
+
+    // receive (and normalize if necessary) datum from the RFDuino
+    int receivedValue = (int) ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+    Log.d(TAG, String.format("raw datum received: %d", receivedValue));
+
+    // display datum on slider
+    slider.setProgress(receivedValue);
+
+    // push datum to log file (timestamp, value)
+    log(String.valueOf(receivedValue));
+  }
+
+  public void log(String message) {
+    try {
+      FileOutputStream out = openFileOutput(LOG_FNAME, MODE_APPEND);
+      out.write(String.format("%s,%s\n", Utility.getDateTimeString(), message).getBytes());
+      out.close();
+    } catch (IOException e) {
+      Log.e(TAG, e.toString());
+    }
+  }
+
+  public void exportLog() {
+    File attachment = new File(getFilesDir() + "/" + LOG_FNAME);
+    Uri attachmentUri =
+        FileProvider.getUriForFile(this, "net.philadams.keppi.fileprovider", attachment);
+    Intent emailIntent = new Intent(Intent.ACTION_SEND);
+    emailIntent.putExtra(Intent.EXTRA_EMAIL, EMAIL_RECIPIENTS);
+    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Keppi log file");
+    emailIntent.putExtra(Intent.EXTRA_TEXT, "Log file (timestamp,datum) attached.");
+    emailIntent.setType("plain/text");
+    emailIntent.putExtra(Intent.EXTRA_STREAM, attachmentUri);
+    emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+    startActivity(emailIntent);
+
+    //try {
+    //  FileInputStream in = openFileInput(LOG_FNAME);
+    //  InputStreamReader streamReader = new InputStreamReader(in);
+    //  BufferedReader reader = new BufferedReader(streamReader);
+    //  StringBuilder sb = new StringBuilder();
+    //  String line;
+    //  while ((line = reader.readLine()) != null) {
+    //    sb.append(line);
+    //  }
+    //} catch (IOException e) {
+    //  Log.e(TAG, e.toString());
+    //}
+  }
+
+  public void emptyLog() {
+
   }
 }

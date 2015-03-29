@@ -7,15 +7,13 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import java.util.Random;
 
 /**
  */
 public class KeppiSliderNumberedView extends View {
 
-  final static String TAG = "SuperVASNumberedView";
+  final static String TAG = KeppiSliderNumberedView.class.getSimpleName();
 
   // selector knob/circle
   private Paint selectorInnerPaint;
@@ -29,6 +27,7 @@ public class KeppiSliderNumberedView extends View {
   private float scaleY1 = 0.0f;
   private float scaleY2 = 400 - scaleY1;
   private float selectorTargetY = 100f;
+  private int mProgress = 100;
   private float padding = radius;  // offset from the edges of the scale
 
   private float minTargetY = scaleY1;
@@ -116,41 +115,10 @@ public class KeppiSliderNumberedView extends View {
   }
 
   /**
-   * onTouchEvent()
-   * when the user touches the screen, update the selector to point where the user taps
-   */
-  public boolean onTouchEvent(MotionEvent motionEvent) {
-    int progress = new Random().nextInt(101);
-    Log.d(TAG, String.format("progress: %d", progress));
-    switch (motionEvent.getAction()) {
-      case MotionEvent.ACTION_DOWN:
-        return true;
-      case MotionEvent.ACTION_UP:
-        setProgress(progress);
-        return true;
-      default:
-        return super.onTouchEvent(motionEvent);
-    }
-    //switch (motionEvent.getAction()) {
-    //  case MotionEvent.ACTION_DOWN:  // TODO:philadams indicate user touching screen??? haptics?
-    //    return true;
-    //  case MotionEvent.ACTION_MOVE:
-    //    setSelectorTarget(motionEvent.getY());
-    //    return true;
-    //  case MotionEvent.ACTION_UP:
-    //    setSelectorTarget(motionEvent.getY());
-    //    return true;
-    //  default:
-    //    return super.onTouchEvent(motionEvent);
-    //}
-  }
-
-  /**
    * drawReportedValue(Canvas canvas)
    */
   protected void drawReportedValue(Canvas canvas) {
-    canvas.drawText(String.valueOf(getProgress()), reportedValueX, reportedValueY,
-        reportedValuePaint);
+    canvas.drawText(String.valueOf(mProgress), reportedValueX, reportedValueY, reportedValuePaint);
   }
 
   private void setSelectorTarget(float target) {
@@ -173,7 +141,7 @@ public class KeppiSliderNumberedView extends View {
    */
   @Override
   public void onSizeChanged(int w, int h, int oldw, int oldh) {
-    scaleX = 0.15f * w;
+    scaleX = 0.5f * w;
     scaleY1 = 0 + padding;
     scaleY2 = h - padding;
     selectorTargetY = 0.8f * h;
@@ -196,16 +164,48 @@ public class KeppiSliderNumberedView extends View {
   }
 
   public int getProgress() {
-    return 100 - (int) Utility.linearlyScale(selectorTargetY, minTargetY, maxTargetY, 0.0f, 100.0f);
+    return mProgress;
   }
 
   /**
-   * from 0-100, map into minTargetY...maxTargetY
+   * from 0-100, map into maxTarget - (minTargetY...maxTargetY)
    */
   public void setProgress(int progress) {
-    Log.d(TAG, "setting progress...");
-    float target = Utility.linearlyScale(progress, 0.0f, 100.0f, minTargetY, maxTargetY);
-    setSelectorTarget(target);
-    invalidate();
+    mProgress = progress;
+    Log.d(TAG, String.format("setting progress on slider to %d", progress));
+    float min = 0f;
+    float max = 100f;
+    float target = maxTargetY - Utility.linearlyScale(progress, min, max, minTargetY, maxTargetY);
+    setSelectorTarget(target);  // calls invalidate()
   }
+
+  /**
+   * onTouchEvent()
+   * when the user touches the screen, update the selector to point where the user taps
+   */
+  //public boolean onTouchEvent(MotionEvent motionEvent) {
+  //  int progress = new Random().nextInt(101);
+  //  Log.d(TAG, String.format("progress: %d", progress));
+  //  switch (motionEvent.getAction()) {
+  //    case MotionEvent.ACTION_DOWN:
+  //      return true;
+  //    case MotionEvent.ACTION_UP:
+  //      setProgress(progress);
+  //      return true;
+  //    default:
+  //      return super.onTouchEvent(motionEvent);
+  //  }
+  //  //switch (motionEvent.getAction()) {
+  //  //  case MotionEvent.ACTION_DOWN:  // TODO:philadams indicate user touching screen??? haptics?
+  //  //    return true;
+  //  //  case MotionEvent.ACTION_MOVE:
+  //  //    setSelectorTarget(motionEvent.getY());
+  //  //    return true;
+  //  //  case MotionEvent.ACTION_UP:
+  //  //    setSelectorTarget(motionEvent.getY());
+  //  //    return true;
+  //  //  default:
+  //  //    return super.onTouchEvent(motionEvent);
+  //  //}
+  //}
 }
