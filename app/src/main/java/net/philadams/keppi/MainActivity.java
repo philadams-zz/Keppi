@@ -101,6 +101,7 @@ public class MainActivity extends Activity {
     @Override
     public void onReceive(Context context, Intent intent) {
       final String action = intent.getAction();
+      Log.d(TAG, String.format("rfduinoReceiver received: %s", action));
       if (RFduinoService.ACTION_CONNECTED.equals(action)) {
         upgradeState(STATE_CONNECTED);
       } else if (RFduinoService.ACTION_DISCONNECTED.equals(action)) {

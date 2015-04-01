@@ -72,7 +72,7 @@ public class RFduinoService extends Service {
     @Override
     public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
       if (newState == BluetoothProfile.STATE_CONNECTED) {
-        Log.i(TAG, "Connected to RFduino.");
+        Log.i(TAG, String.format("Connected to RFduino %s.", mBluetoothDeviceAddress));
         Log.i(TAG, "Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
       } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
         Log.i(TAG, "Disconnected from RFduino.");
@@ -115,6 +115,7 @@ public class RFduinoService extends Service {
     @Override
     public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic,
         int status) {
+      Log.d(TAG, String.format("onCharacteristicRead (BGC=%s)", characteristic.toString()));
       if (status == BluetoothGatt.GATT_SUCCESS) {
         broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
       }
@@ -123,6 +124,7 @@ public class RFduinoService extends Service {
     @Override
     public void onCharacteristicChanged(BluetoothGatt gatt,
         BluetoothGattCharacteristic characteristic) {
+      Log.d(TAG, String.format("onCharacteristicRead (BGC=%s)", characteristic.toString()));
       broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
     }
   };
@@ -249,6 +251,7 @@ public class RFduinoService extends Service {
   }
 
   public void read() {
+    Log.d(TAG, "read()");
     if (mBluetoothGatt == null || mBluetoothGattService == null) {
       Log.w(TAG, "BluetoothGatt not initialized");
       return;
