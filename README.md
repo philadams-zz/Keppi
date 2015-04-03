@@ -3,12 +3,13 @@ Keppi
 
 Simple Android app for connecting via Bluetooth LE to the Keppi stick.
 
+Basically, scan for and connect to an RFDuino (in this case, the [RFDuino
+component of the Keppi stick](https://github.com/philadams/keppi-arduino)).
+Then display the incoming values in a slider widget.
+
 ![Image of Keppi](./docs/keppi-image.png)
 
 See [the releases folder](./releases) for the latest release(s).
-
-- TODO have 'scanning' notice when scanning and device not yet found
-- TODO have data export functionality?
 
 License
 -------
