@@ -94,7 +94,7 @@ public class KeppiSliderNumberedView extends View {
   protected void onDraw(Canvas canvas) {
     drawScaleBar(canvas);
     drawSelectorKnob(canvas);
-    drawReportedValue(canvas);
+    //drawReportedValue(canvas);
   }
 
   /**

@@ -38,7 +38,7 @@ public class MainActivity extends Activity {
 
   public static final String TAG = MainActivity.class.getSimpleName();
   private final String LOG_FNAME = "net.philadams.keppi.log.csv";
-  private final String[] EMAIL_RECIPIENTS = { "philadams.net@gmail.com" };
+  private final String[] EMAIL_RECIPIENTS = { "philadams.net@gmail.com", "mse56@cornell.edu", "alexandertadams@gmail.com" };
 
   // Intent requests
   private final int REQUEST_ENABLE_BT = 1;
