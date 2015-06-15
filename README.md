@@ -23,11 +23,11 @@ adapted from the Apache v2 licensed Android Open Source Project.
 Copyright
 ---------
 
-Copyright 2015 Phil Adams
-
 Parts of the project Copyright 2013 Lann.
 
 Parts of the project adapted from code Copyright 2013 The Android Open Source
 Project.
+
+All else, please feel free to use as you wish.
 
 [1] https://github.com/lann/RFDuinoTest
